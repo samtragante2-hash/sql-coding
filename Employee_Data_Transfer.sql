@@ -1,5 +1,9 @@
 /*
-The purpose of this report was to transfer our general employee data from our current database (Streamlinequery) to our new database (NEW_DataImport). Then, we import all the employee licenses data as well.
+This stored procedure refreshes an employee staging table for an Axiom data import. It pulls active, non-deleted Streamline staff hired within the last 7 years and matched to Paylocity by email, 
+formats fields (e.g., trims ZIP to 5, strips punctuation from phone, takes middle initial), sets some fields to defaults/nulls (e.g., FullTime=0, HoursPerWeek=NULL), 
+and inserts them into `NEW_DataImport.dbo.Employee` with the Streamline `StaffId` as `OldSystemEmpID`. It then removes any rows whose IDs already exist in `EmployeeTotal`
+and appends only new IDs from `Employee` into `EmployeeTotal` (a deduping “append new” step). Note: the filter `pa.employmentStatusType <> 'T'` appears to reference the wrong alias 
+and likely should be `p.employmentStatusType`.
 */
 
 USE [AnalyticsCustomTables]
@@ -81,5 +85,6 @@ SELECT * FROM NEW_DataImport.dbo.Employee
 WHERE OldSystemEmpID not IN (SELECT OldSystemEmpID FROM NEW_DataImport.dbo.EmployeeTotal)
 
 END
+
 
 
