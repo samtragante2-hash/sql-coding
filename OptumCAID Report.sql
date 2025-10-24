@@ -1,3 +1,11 @@
+/* 
+This query pulls services between July 1 2024 and June 30 2025 that were billable, completed, and billed in proper coordination-of-benefits order—Medicare (Care group) as primary, 
+Xover as secondary, and Medicaid (Caid group) as tertiary. It verifies that each service had valid coverage for all three payers on the date of service, 
+that a charge existed for each COB level in sequence, and that payments (from ARLedger) were recorded accordingly. 
+The final output lists each client’s service with its provider, licensure, procedure details, payer names, charge dates, 
+and corresponding payment amounts, effectively identifying services billed and paid under the full Medicare → Xover → Medicaid workflow.
+*/
+
 /* ========= 1) Payer groups ========= */
 WITH Care AS (
     SELECT v.CoveragePlanId
@@ -245,4 +253,5 @@ Final AS (
 SELECT *
 FROM Final
 ORDER BY ClientId, ServiceId, DateOfService;
+
 
