@@ -30,7 +30,7 @@ Caid AS (
     ) v(CoveragePlanId)
 ),
 
-/* ========= 2) Services pre-filter ========= */
+/* ========= Services pre-filter ========= */
 Svc AS (
     SELECT s.ServiceId, s.ClientId, s.DateOfService, s.ClinicianId,
            s.ProcedureCodeId, s.TotalDuration, s.Unit, s.Status, s.Charge
@@ -42,7 +42,7 @@ Svc AS (
       AND s.Billable = 'Y'
 ),
 
-/* ========= 3) Main select with DOS-effective COBs and enforced billing order ========= */
+/* ========= Main select with DOS-effective COBs and enforced billing order ========= */
 Final AS (
     SELECT
         s.ClientId,
@@ -222,34 +222,19 @@ Final AS (
         JOIN StreamlineQuery.dbo.GlobalCodes gc
           ON gc.GlobalCodeId = al.LedgerType
          AND gc.Category = 'ARLEDGERTYPE'
-         AND gc.CodeName = 'Payment'     -- per your note
+         AND gc.CodeName = 'Payment'   
         WHERE al.ChargeId = ch3.ChargeId
           AND al.CoveragePlanId = cob3.CoveragePlanId
     ) adj3
 
-    /* staff */
     JOIN StreamlineQuery.dbo.Staff st
       ON st.StaffId = s.ClinicianId
      AND ISNULL(st.RecordDeleted,'N')='N'
 
-    /* >>> ProcedureCodes join (new) <<< */
     LEFT JOIN StreamlineQuery.dbo.ProcedureCodes pc
       ON pc.ProcedureCodeId = s.ProcedureCodeId
      AND ISNULL(pc.RecordDeleted,'N')='N'
 
-	--LEFT JOIN StreamlineQuery.dbo.Claims c
-	--	ON s.ClientId = c.ClientId
-	--		AND ISNULL(c.RecordDeleted, 'N') = 'N'
-
-	--LEFT JOIN StreamlineQuery.dbo.ClaimLines cl
-	--	ON cl.ClaimId = c.ClaimId
-	--		AND ISNULL(cl.RecordDeleted, 'N') = 'N'
-
-	--LEFT JOIN StreamlineQuery.dbo.BillingCodes bc
-	--	ON bc.BillingCodeId = cl.BillingCodeId
-	--		AND ISNULL(bc.RecordDeleted, 'N') = 'N'
-
-    /* require all three stages and order */
     WHERE ch1.ChargeId IS NOT NULL
       AND ch2.ChargeId IS NOT NULL
       AND ch3.ChargeId IS NOT NULL
@@ -260,4 +245,4 @@ Final AS (
 SELECT *
 FROM Final
 ORDER BY ClientId, ServiceId, DateOfService;
--- OPTION (RECOMPILE)
+
